@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
-require File.expand_path('../lib/spring/commands/version', __FILE__)
+#require File.expand_path('../lib/spring/commands/version', __FILE__)
 
 Gem::Specification.new do |s|
   s.name = 'spring-commands-orspec'
-  s.version = Spring::Commands::Orspec::VERSION
+  s.version = '1.0.0'
   s.author = 'Brady Wied'
   s.email = 'brady@bswtechconsulting.com'
   s.summary = 'Adds spring support to opal-rspec'
@@ -15,6 +15,9 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_dependency 'opal-rspec', '>= 0.5.0.beta3'
+  s.add_dependency 'opal-rails', '>= 0.8.1.beta3'
   s.add_dependency 'spring', '>= 0.9.1'
   s.add_development_dependency 'rake'
+
+  s.add_development_dependency 'rspec-rails', '~> 3.0'
 end
