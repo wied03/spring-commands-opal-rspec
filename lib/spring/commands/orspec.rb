@@ -1,7 +1,19 @@
 module Spring
   module Commands
     class Orspec
-      VERSION = '1.0.0'
+      def env(*)
+        'test'
+      end
+
+      def call
+
+      end
+
+      def description
+        'Execute opal::rspec tests'
+      end
     end
+
+    Spring.register_command 'orspec', Orspec.new
   end
 end

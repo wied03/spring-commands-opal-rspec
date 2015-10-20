@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-require File.expand_path('../lib/spring/commands/orspec', __FILE__)
+require File.expand_path('../lib/spring/commands/version', __FILE__)
 
 Gem::Specification.new do |s|
   s.name = 'spring-commands-orspec'

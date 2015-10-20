@@ -1,4 +1,6 @@
-describe SpringCommandsOrspec do
+require 'spring-commands-orspec'
+
+describe Spring::Commands::Orspec do
   context 'spring not running' do
     pending 'write this'
   end
