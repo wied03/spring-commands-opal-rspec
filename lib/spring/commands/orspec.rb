@@ -97,18 +97,19 @@ module Spring
       end
 
       def call
-        thread = start_server
-        begin
-          launch_phantom
-        ensure
-          thread.kill
-        end
+        start_server unless server_running?
+        #begin
+        launch_phantom
+        #ensure
+        #  thread.kill
+        #end
       end
 
       PORT = 9999
       URL = "http://localhost:#{PORT}/"
 
       def launch_phantom(timeout_value=nil)
+        # TODO: Hard coded GEM path
         # Not using use_gem because we don't want the RSpec dependencies rspec_junit_formatter has
         #rspec_path = Gem::Specification.find_by_name('opal-rspec')
         path = '/usr/local/bundle/gems/opal-rspec-0.5.0.beta3'
@@ -126,52 +127,53 @@ module Spring
         end
         command_line = %Q{phantomjs #{runner_path} "#{URL}"#{timeout_value ? " #{timeout_value}" : ''}}
         puts "Running #{command_line}"
-        #system command_line
-        pid = Process.spawn command_line
-        Process.wait pid
+        system command_line
         success = $?.success?
         exit 1 unless success
       end
 
       def start_server
-        puts caller
-        puts "our PID is #{Process.pid}, parent pid is #{Process.ppid}"
-        pattern = ENV['PATTERN'] || (::Rails.application.config.opal.spec_location+'/**/*_spec{,.js}.{rb,opal}')
-        sprockets_env = Opal::RSpec::SprocketsEnvironment.new(spec_pattern = pattern)
-        app = Opal::Server.new(sprockets: sprockets_env) { |s|
-          s.main = 'opal/rspec/sprockets_runner'
-          s.debug = false
-
-          ::Rails.application.assets.paths.each { |p| s.append_path p }
-        }
-        sprockets_env.add_spec_paths_to_sprockets
-        locator1 = sprockets_env.instance_variable_get(:@locator)
-        locator2 = Opal::RSpec::PostRackLocator.new(locator1)
-        puts "spec files are #{locator2.get_opal_spec_requires}"
-#        app_name = ::Spring::Env.new.app_name
-#         server_pid = fork {
-#           # Spring::ProcessTitleUpdater.run { |distance|
-#           #   "spring app    | #{app_name} | started #{distance} ago | opal-rspec mode"
-#           # }
-#           Rack::Server.start(
-#               :app => app,
-#               :Port => PORT,
-#               :AccessLog => [],
-#               :Logger => WEBrick::Log.new("/dev/null"),
-#           )
-#         }
-#         puts "server pid is #{server_pid}"
-        thread = Thread.new do
-          Thread.current.abort_on_exception = true
-          Rack::Server.start(
-              :app => app,
-              :Port => PORT,
-              :AccessLog => [],
-              :Logger => WEBrick::Log.new("/dev/null"),
-          )
-        end
+        # pattern = ENV['PATTERN'] || (::Rails.application.config.opal.spec_location+'/**/*_spec{,.js}.{rb,opal}')
+        # sprockets_env = Opal::RSpec::SprocketsEnvironment.new(spec_pattern = pattern)
+        # app = Opal::Server.new(sprockets: sprockets_env) { |s|
+        #   s.main = 'opal/rspec/sprockets_runner'
+        #   s.debug = false
+        #
+        #   ::Rails.application.assets.paths.each { |p| s.append_path p }
+        # }
+        # sprockets_env.add_spec_paths_to_sprockets
+        # app_name = ::Spring::Env.new.app_name
+        # server_pid = fork {
+        #   Process.setsid
+        #
+        #   Spring::ProcessTitleUpdater.run { |distance|
+        #     "spring app    | #{app_name} | started #{distance} ago | opal-rspec mode"
+        #   }
+        #   Rack::Server.start(
+        #       :app => app,
+        #       :Port => PORT,
+        #       :AccessLog => [],
+        #       :Logger => WEBrick::Log.new("/dev/null"),
+        #   )
+        # }
+        # Process.detach server_pid
+        Process.spawn({'RAILS_ROOT' => ::Rails.root.to_s}, 'ruby',
+                      "-I", File.expand_path("../..", __FILE__),
+                      '-e',
+                      'require "spring/commands/rack_boot"')
         wait_for_server
-        thread
+      end
+
+      # TODO: dedupe with wait for server
+      def server_running?
+        uri = URI(URL)
+        begin
+          socket = TCPSocket.new uri.hostname, uri.port
+          socket.close
+          true
+        rescue Errno::ECONNREFUSED
+          false
+        end
       end
 
       def wait_for_server
