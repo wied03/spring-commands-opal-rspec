@@ -1,4 +1,5 @@
 require 'tempfile'
+require 'benchmark'
 
 describe Spring::Commands::Orspec do
   # Spring seems goofy unless we use File I/O
@@ -7,7 +8,6 @@ describe Spring::Commands::Orspec do
     file.close
     begin
       redir = "#{command} 1> #{file.path} 2>&1"
-      puts "Running #{redir}"
       success = Bundler.clean_system redir
       output = File.read(file.path)
       raise "'#{command}' failed with output\n#{output.strip}" unless success
@@ -23,7 +23,6 @@ describe Spring::Commands::Orspec do
 
   around do |ex|
     Dir.chdir 'test_app' do
-      puts "Running example in #{Dir.pwd}"
       ex.run
     end
   end
@@ -37,6 +36,7 @@ describe Spring::Commands::Orspec do
   end
 
   before do
+    @benchmarks = []
     stop_spring_regardless
   end
 
@@ -44,23 +44,59 @@ describe Spring::Commands::Orspec do
     stop_spring_regardless
   end
 
-  context 'spring not running' do
-    subject { run_spring 'orspec' }
+  subject(:output) {
+    output = nil
+    @benchmarks << Benchmark.realtime do
+      output = run_spring 'orspec'
+    end
+    output
+  }
 
+  context 'spring not running' do
     it { is_expected.to match /1 example, 0 failures/ }
   end
 
   context 'spring already running' do
-    pending 'write this'
+    before do
+      # force the 1st task to run
+      foo = output
+      @benchmarks << Benchmark.realtime do
+        @second_output = run_spring 'orspec'
+      end
+    end
+
+    subject { @second_output }
+
+    it { is_expected.to match /1 example, 0 failures/ }
+    it 'is faster the 2nd time' do
+      expect(@benchmarks[1]).to be < @benchmarks[0]
+    end
   end
 
   context 'spring stop' do
+    before do
+      run_spring 'orspec'
+    end
+
+    subject { `ps ux` }
+
     context 'after 1 run' do
-      pending 'write this'
+      before do
+        stop_spring_regardless
+        sleep 1
+      end
+
+      it { is_expected.to_not match /spring.*test_app/ }
     end
 
     context 'after 2 runs' do
-      pending 'write this'
+      before do
+        run_spring 'orspec'
+        stop_spring_regardless
+        sleep 1
+      end
+
+      it { is_expected.to_not match /spring.*test_app/ }
     end
   end
 
