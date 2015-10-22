@@ -1,5 +1,3 @@
-Process.setsid
-require 'bundler'
 require 'spring/commands/orspec'
 require 'rack'
 require 'webrick'
