@@ -2,6 +2,8 @@ require 'spring/application'
 require 'spring/commands'
 require 'opal/rspec/rake_task'
 
+# Out of the box, there is no way to send any state back from a command to the application class
+# We spin up another server process that needs to be terminated when the app process terminates
 module Spring
   class Application
     def setup(command_wrapper)

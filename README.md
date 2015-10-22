@@ -12,7 +12,7 @@ Add to your Gemfile:
 gem 'spring-commands-orspec', group: :development
 ```
 
-If you're using spring binstubs, run `bundle exec spring binstub orspec` to generate bin/orspec. Then run spring stop to pick up the changes.
+If you're using spring binstubs, run `bundle exec spring binstub orspec` to generate `bin/orspec`. Then run `bin/orspec`. It will use the configured spec info from your opal-rails setup.
 
 ## Limitations:
 
