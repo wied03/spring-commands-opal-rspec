@@ -1,6 +1,8 @@
 Process.setsid
 require 'bundler'
 require 'spring/commands/orspec'
+require 'rack'
+require 'webrick'
 require File.expand_path('config/environment', ENV['RAILS_ROOT'])
 
 pattern = ENV['PATTERN'] || (::Rails.application.config.opal.spec_location+'/**/*_spec{,.js}.{rb,opal}')

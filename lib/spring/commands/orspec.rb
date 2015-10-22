@@ -1,7 +1,5 @@
-require 'rack'
-require 'webrick'
-require 'spring/server'
-require 'spring/client'
+require 'spring/application'
+require 'spring/commands'
 require 'opal/rspec/rake_task'
 
 # module Opal
@@ -85,19 +83,48 @@ require 'opal/rspec/rake_task'
 # end
 
 module Spring
+  class Application
+    def setup(command_wrapper)
+      setup = if command_wrapper.command.is_a?(Spring::Commands::Orspec)
+                pid = command_wrapper.command.setup
+                puts "spring app, got pid #{pid} back"
+                @opal_rspec_pid = pid
+              else
+                command_wrapper.setup
+              end
+      if setup
+        watcher.add loaded_application_features # loaded features may have changed
+      end
+    end
+
+    alias_method :stock_terminate, :terminate
+
+    def terminate
+      if @opal_rspec_pid
+        log "terminating opal-rspec PID #{@opal_rspec_pid}"
+        Process.kill 'TERM', @opal_rspec_pid
+      end
+      stock_terminate
+    end
+  end
+end
+
+module Spring
   module Commands
     class Orspec
       def env(*)
         'test'
       end
 
+      def setup
+        unless server_running?
+          start_server
+        end
+      end
+
       def call
-        start_server unless server_running?
-        #begin
+        wait_for_server
         launch_phantom
-        #ensure
-        #  thread.kill
-        #end
       end
 
       PORT = 9999
@@ -128,11 +155,12 @@ module Spring
       end
 
       def start_server
-        Process.spawn({'RAILS_ROOT' => ::Rails.root.to_s}, 'ruby',
-                      "-I", File.expand_path("../..", __FILE__),
-                      '-e',
-                      'require "spring/commands/rack_boot"')
-        wait_for_server
+        pid = Process.spawn({'RAILS_ROOT' => ::Rails.root.to_s}, 'ruby',
+                            "-I", File.expand_path("../..", __FILE__),
+                            '-e',
+                            'require "spring/commands/rack_boot"')
+        puts "in #{Process.pid}, spawned server as #{pid}"
+        pid
       end
 
       # TODO: dedupe with wait for server
@@ -152,7 +180,8 @@ module Spring
         tries = 0
         up = false
         uri = URI(URL)
-        while tries < 4 && !up
+        max_tries = 50
+        while tries < max_tries && !up
           tries += 1
           sleep 0.1
           begin
@@ -166,7 +195,7 @@ module Spring
             # server not up yet
           end
         end
-        raise 'Tried 4 times to contact Rack server and not up!' unless up
+        raise "Tried #{max_tries} times to contact Rack server and not up!" unless up
       end
 
       def description
