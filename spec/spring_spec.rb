@@ -118,6 +118,17 @@ describe Spring::Commands::Orspec do
   end
 
   context 'test changed' do
-    pending 'write this'
+    around do |ex|
+      run_spring 'orspec'
+      primary = File.join('spec', 'example_spec.rb')
+      second = File.join('spec', 'swap.rb')
+      backup = "#{primary}.backup"
+      FileUtils.cp primary, backup
+      FileUtils.cp second, primary
+      ex.run
+      FileUtils.mv backup, primary
+    end
+
+    it { is_expected.to match /2 examples, 0 failures/ }
   end
 end
