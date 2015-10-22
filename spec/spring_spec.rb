@@ -7,7 +7,7 @@ describe Spring::Commands::Orspec do
     file = Tempfile.new 'spring_test'
     file.close
     begin
-      redir = "#{command} 1> #{file.path} 2>&1"
+      redir = "SPEC_OPTS='#{spec_opts}' #{command} 1> #{file.path} 2>&1"
       success = Bundler.clean_system redir
       output = File.read(file.path)
       raise "'#{command}' failed with output\n#{output.strip}" unless success
@@ -44,6 +44,8 @@ describe Spring::Commands::Orspec do
     stop_spring_regardless
   end
 
+  let(:spec_opts) { '' }
+
   subject(:output) {
     output = nil
     @benchmarks << Benchmark.realtime do
@@ -54,6 +56,12 @@ describe Spring::Commands::Orspec do
 
   context 'spring not running' do
     it { is_expected.to match /1 example, 0 failures/ }
+  end
+
+  context 'spec_opts set' do
+    let(:spec_opts) { '--format j' }
+
+    it { is_expected.to match /\{"examples.*/ }
   end
 
   context 'spring already running' do

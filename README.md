@@ -14,6 +14,12 @@ gem 'spring-commands-orspec', group: :development
 
 If you're using spring binstubs, run `bundle exec spring binstub orspec` to generate `bin/orspec`. Then run `bin/orspec`. It will use the configured spec info from your opal-rails setup.
 
+SPEC_OPTS can also be supplied (see opal-rspec docs). Any changes will not take effect until `spring stop` is issued. Example:
+
+```ruby
+SPEC_OPTS="--format j" spring orspec
+```
+
 ## Limitations/Quirks:
 
 This command does a little more than the average Spring command because it starts a separate Rack server (from Rails) to serve up the opal specs. The rack server will be stopped/managed by `spring stop` but it will not show up in `spring status`. Here are samples:
