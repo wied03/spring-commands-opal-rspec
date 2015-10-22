@@ -100,8 +100,21 @@ describe Spring::Commands::Orspec do
     end
   end
 
-  context 'Rakefile/pattern changed' do
-    pending 'write this'
+  context 'opal spec location changed' do
+    around do |ex|
+      run_spring 'orspec'
+      primary = File.join('config', 'application.rb')
+      second = File.join('config', 'application_2.rb')
+      backup = "#{primary}.backup"
+      FileUtils.cp primary, backup
+      FileUtils.cp second, primary
+      ex.run
+      FileUtils.mv backup, primary
+    end
+
+    subject { lambda { output } }
+
+    it { is_expected.to raise_error /.*2 examples, 1 failure.*/ }
   end
 
   context 'test changed' do
