@@ -14,8 +14,28 @@ gem 'spring-commands-orspec', group: :development
 
 If you're using spring binstubs, run `bundle exec spring binstub orspec` to generate `bin/orspec`. Then run `bin/orspec`. It will use the configured spec info from your opal-rails setup.
 
-## Limitations:
+## Limitations/Quirks:
 
+This command does a little more than the average Spring command because it starts a separate Rack server (from Rails) to serve up the opal specs. The rack server will be stopped/managed by `spring stop` but it will not show up in `spring status`. Here are samples:
+
+```
+bin/spring status
+
+Spring is running:
+
+ 2622 spring server | test_app | started 19 secs ago                             
+ 2626 spring app    | test_app | started 19 secs ago | test mode
+```
+
+```
+ps ux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root        13  0.0  0.1  20276  3228 ?        S    04:12   0:00 bash
+root      2622  0.5  1.7 326968 36900 ?        Sl   05:21   0:00 spring server | test_app | started 2 mins ago                              
+root      2626  4.5  3.8 391692 78336 ?        Ssl  05:21   0:06 spring app    | test_app | started 2 mins ago | test mode                           
+root      2633  6.9  8.6 462860 176672 ?       Sl   05:21   0:09 spring app    | test_app | started 2 mins ago | opal-rspec mode                       
+root      2656  0.0  0.1  17492  2084 ?        R+   05:23   0:00 ps ux
+```
 
 ## Contributing
 
