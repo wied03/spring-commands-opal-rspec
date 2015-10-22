@@ -7,7 +7,7 @@ require 'opal/rspec/rake_task'
 module Spring
   class Application
     def setup(command_wrapper)
-      setup = if command_wrapper.command.is_a?(Spring::Commands::Orspec)
+      setup = if command_wrapper.command.is_a?(Spring::Commands::OpalRSpec)
                 pid = command_wrapper.command.setup
                 @opal_rspec_pid ||= pid
               else

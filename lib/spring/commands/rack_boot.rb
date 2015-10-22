@@ -1,4 +1,4 @@
-require 'spring/commands/orspec'
+require 'spring/commands/opal_rspec'
 require 'rack'
 require 'webrick'
 require File.expand_path('config/environment', ENV['RAILS_ROOT'])
@@ -20,7 +20,7 @@ Spring::ProcessTitleUpdater.run { |distance|
 
 Rack::Server.start(
     :app => app,
-    :Port => Spring::Commands::Orspec::PORT,
+    :Port => Spring::Commands::OpalRSpec::PORT,
     :AccessLog => [],
     :Logger => WEBrick::Log.new("/dev/null"),
 )
