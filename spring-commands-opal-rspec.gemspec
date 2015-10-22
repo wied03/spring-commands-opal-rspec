@@ -2,8 +2,8 @@
 require File.expand_path('../lib/spring/commands/version', __FILE__)
 
 Gem::Specification.new do |s|
-  s.name = 'spring-commands-orspec'
-  s.version = Spring::Commands::Orspec::VERSION
+  s.name = 'spring-commands-opal-rspec'
+  s.version = Spring::Commands::OpalRSpec::VERSION
   s.author = 'Brady Wied'
   s.email = 'brady@bswtechconsulting.com'
   s.summary = 'Adds spring support to opal-rspec'

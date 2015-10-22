@@ -1,6 +1,6 @@
-# spring-commands-orspec
+# spring-commands-opal-rspec
 
-[![Build Status](http://img.shields.io/travis/wied03/spring-commands-orspec/master.svg?style=flat)](http://travis-ci.org/wied03/spring-commands-orspec)
+[![Build Status](http://img.shields.io/travis/wied03/spring-commands-opal-rspec/master.svg?style=flat)](http://travis-ci.org/wied03/spring-commands-opal-rspec)
 
 Adds spring support to opal-rspec
 
@@ -9,15 +9,15 @@ Adds spring support to opal-rspec
 Add to your Gemfile:
 
 ```ruby
-gem 'spring-commands-orspec', group: :development
+gem 'spring-commands-opal-rspec', group: :development
 ```
 
-If you're using spring binstubs, run `bundle exec spring binstub orspec` to generate `bin/orspec`. Then run `bin/orspec`. It will use the configured spec info from your opal-rails setup.
+If you're using spring binstubs, run `bundle exec spring binstub opal-rspec` to generate `bin/opal-rspec`. Then run `bin/opal-rspec`. It will use the configured spec info from your opal-rails setup.
 
 SPEC_OPTS can also be supplied (see opal-rspec docs). Any changes will not take effect until `spring stop` is issued. Example:
 
 ```ruby
-SPEC_OPTS="--format j" spring orspec
+SPEC_OPTS="--format j" spring opal-rspec
 ```
 
 ## Limitations/Quirks:

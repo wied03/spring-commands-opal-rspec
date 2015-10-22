@@ -1,6 +1,6 @@
 module Spring
   module Commands
-    class Orspec
+    class OpalRSpec
       VERSION = '1.0.0'
     end
   end

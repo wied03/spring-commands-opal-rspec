@@ -1,3 +1,3 @@
 if defined?(Spring.register_command)
-  require 'spring/commands/orspec'
+  require 'spring/commands/opal_rspec'
 end

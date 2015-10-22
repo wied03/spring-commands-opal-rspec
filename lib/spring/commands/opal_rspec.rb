@@ -32,7 +32,7 @@ end
 
 module Spring
   module Commands
-    class Orspec
+    class OpalRSpec
       def env(*)
         'test'
       end
@@ -112,6 +112,6 @@ module Spring
       end
     end
 
-    Spring.register_command 'orspec', Orspec.new
+    Spring.register_command 'opal-rspec', OpalRSpec.new
   end
 end
