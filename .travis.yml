@@ -1,0 +1,15 @@
+language: ruby
+sudo: false
+
+cache:
+  bundler: true
+
+matrix:
+  fast_finish: true
+
+  include:
+    - rvm: 2.1.0
+    - rvm: 2.2.3
+
+script:
+  - "bundle exec rake"
