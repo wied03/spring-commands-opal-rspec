@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description = 'Allows the opal-rspec Rake task to run faster by keeping the PhantomJS process running in the background'
   s.homepage = 'https://github.com/wied03/spring-commands-orspec'
 
-  s.files = `git ls-files`.split("\n")
+  s.files = Dir.glob('lib/**/*.rb')
 
   s.require_paths = ['lib']
 
