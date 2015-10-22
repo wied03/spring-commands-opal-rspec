@@ -50,11 +50,8 @@ module Spring
       URL = "http://localhost:#{PORT}/"
 
       def launch_phantom(timeout_value=nil)
-        # TODO: Hard coded GEM path
-        # Not using use_gem because we don't want the RSpec dependencies rspec_junit_formatter has
-        #rspec_path = Gem::Specification.find_by_name('opal-rspec')
-        path = '/usr/local/bundle/gems/opal-rspec-0.5.0.beta3'
-        runner_path = File.join(path, 'vendor/spec_runner.js')
+        rspec_path = Gem.loaded_specs['opal-rspec'].full_gem_path
+        runner_path = File.join(rspec_path, 'vendor/spec_runner.js')
 
         if `phantomjs -v`.strip.to_i >= 2
           warn <<-WARN.gsub(/^              /, '')
