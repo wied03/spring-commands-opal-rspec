@@ -1,7 +1,17 @@
 require 'tempfile'
 require 'benchmark'
 
-describe Spring::Commands::Orspec do
+describe Spring::Commands::OpalRSpec do
+  before :all do
+    Dir.chdir 'test_app' do
+      output = Bundler.with_clean_env do
+        `bundle install`
+      end
+      puts output
+      raise unless $?.success?
+    end
+  end
+
   # Spring seems goofy unless we use File I/O
   def run_stuff(command)
     file = Tempfile.new 'spring_test'
@@ -49,7 +59,7 @@ describe Spring::Commands::Orspec do
   subject(:output) {
     output = nil
     @benchmarks << Benchmark.realtime do
-      output = run_spring 'orspec'
+      output = run_spring 'opal-rspec'
     end
     output
   }
@@ -69,7 +79,7 @@ describe Spring::Commands::Orspec do
       # force the 1st task to run
       foo = output
       @benchmarks << Benchmark.realtime do
-        @second_output = run_spring 'orspec'
+        @second_output = run_spring 'opal-rspec'
       end
     end
 
@@ -83,7 +93,7 @@ describe Spring::Commands::Orspec do
 
   context 'spring stop' do
     before do
-      run_spring 'orspec'
+      run_spring 'opal-rspec'
     end
 
     subject { `ps ux` }
@@ -99,7 +109,7 @@ describe Spring::Commands::Orspec do
 
     context 'after 2 runs' do
       before do
-        run_spring 'orspec'
+        run_spring 'opal-rspec'
         stop_spring_regardless
         sleep 1
       end
@@ -110,7 +120,7 @@ describe Spring::Commands::Orspec do
 
   context 'opal spec location changed' do
     around do |ex|
-      run_spring 'orspec'
+      run_spring 'opal-rspec'
       primary = File.join('config', 'application.rb')
       second = File.join('config', 'application_2.rb')
       backup = "#{primary}.backup"
@@ -127,7 +137,7 @@ describe Spring::Commands::Orspec do
 
   context 'test changed' do
     around do |ex|
-      run_spring 'orspec'
+      run_spring 'opal-rspec'
       primary = File.join('spec', 'example_spec.rb')
       second = File.join('spec', 'swap.rb')
       backup = "#{primary}.backup"
