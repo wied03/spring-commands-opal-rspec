@@ -74,15 +74,16 @@ module Spring
       end
 
       def start_server
-        pid = Process.spawn({'RAILS_ROOT' => ::Rails.root.to_s}, 'ruby',
-                            "-I", File.expand_path("../..", __FILE__),
-                            '-e',
-                            'require "spring/commands/rack_boot"')
-        puts "in #{Process.pid}, spawned server as #{pid}"
-        pid
+        Process.spawn({
+                          'RAILS_ROOT' => ::Rails.root.to_s
+                      },
+                      'ruby',
+                      '-I',
+                      File.expand_path('../..', __FILE__),
+                      '-e',
+                      'require "spring/commands/rack_boot"')
       end
 
-      # TODO: dedupe with wait for server
       def server_running?
         uri = URI(URL)
         begin
@@ -98,21 +99,11 @@ module Spring
         # avoid retryable dependency
         tries = 0
         up = false
-        uri = URI(URL)
         max_tries = 50
         while tries < max_tries && !up
           tries += 1
           sleep 0.1
-          begin
-            # Using TCPSocket, not net/http open because executing the HTTP GET / will incur a decent delay just to check if the server is up
-            # in order to better communicate to the user what is going on, save the actual HTTP request for the phantom/node run
-            # the only objective here is to see if the Rack server has started
-            socket = TCPSocket.new uri.hostname, uri.port
-            up = true
-            socket.close
-          rescue Errno::ECONNREFUSED
-            # server not up yet
-          end
+          up = server_running?
         end
         raise "Tried #{max_tries} times to contact Rack server and not up!" unless up
       end

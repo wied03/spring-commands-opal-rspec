@@ -13,7 +13,6 @@ Gem::Specification.new do |s|
   s.files = `git ls-files`.split("\n")
 
   s.require_paths = ['lib']
-  s.executables << 'spring_orspec'
 
   s.add_dependency 'opal-rspec', '>= 0.5.0.beta3'
   s.add_dependency 'opal-rails', '>= 0.8.1.beta4'
