@@ -1,5 +1,6 @@
 require 'tempfile'
 require 'benchmark'
+require 'retryable'
 
 describe Spring::Commands::OpalRSpec do
   before :all do
@@ -7,8 +8,7 @@ describe Spring::Commands::OpalRSpec do
       output = Bundler.with_clean_env do
         `bundle install`
       end
-      puts output
-      raise unless $?.success?
+      raise output unless $?.success?
     end
   end
 
@@ -37,21 +37,32 @@ describe Spring::Commands::OpalRSpec do
     end
   end
 
-  def stop_spring_regardless
+  def dump_processes(desc)
+    #puts "Processes #{desc}\n #{`ps ux`}"
+  end
+
+  def ensure_spring_shuts_down
     begin
       run_spring 'stop'
-    rescue RuntimeError
-      # don't care if not running
+    rescue RuntimeError => e
+      return e.message
+    end
+    Retryable.retryable(tries: 3, on: RSpec::Expectations::ExpectationNotMetError) do |tries, _|
+      expect(`ps ux`).to_not match(/spring.*test_app/), "try #{tries}"
     end
   end
 
   before do
+    dump_processes 'before, have not done anything'
     @benchmarks = []
-    stop_spring_regardless
+    ensure_spring_shuts_down
+    dump_processes 'before, after stop_spring_regardless'
   end
 
   after do
-    stop_spring_regardless
+    dump_processes 'after, before doing anything'
+    ensure_spring_shuts_down
+    dump_processes 'after, after stop_spring_regardless'
   end
 
   let(:spec_opts) { '' }
@@ -99,35 +110,54 @@ describe Spring::Commands::OpalRSpec do
     subject { `ps ux` }
 
     context 'after 1 run' do
-      before do
-        stop_spring_regardless
-        sleep 1
+      it 'shuts down' do
+        ensure_spring_shuts_down
       end
-
-      it { is_expected.to_not match /spring.*test_app/ }
     end
 
     context 'after 2 runs' do
       before do
         run_spring 'opal-rspec'
-        stop_spring_regardless
-        sleep 1
       end
 
-      it { is_expected.to_not match /spring.*test_app/ }
+      it 'shuts down' do
+        ensure_spring_shuts_down
+      end
     end
   end
 
-  context 'opal spec location changed' do
-    around do |ex|
-      run_spring 'opal-rspec'
-      primary = File.join('config', 'application.rb')
+  context 'test fails' do
+    before do
+      @primary = File.join('config', 'application.rb')
       second = File.join('config', 'application_2.rb')
-      backup = "#{primary}.backup"
-      FileUtils.cp primary, backup
-      FileUtils.cp second, primary
-      ex.run
-      FileUtils.mv backup, primary
+      @backup = "#{@primary}.backup"
+      FileUtils.cp @primary, @backup
+      FileUtils.cp second, @primary
+    end
+
+    after do
+      FileUtils.mv @backup, @primary
+    end
+
+    subject { lambda { output } }
+
+    it { is_expected.to raise_error /.*2 examples, 1 failure.*/ }
+  end
+
+  context 'opal spec location changed after run' do
+    before do
+      run_spring 'opal-rspec'
+      @primary = File.join('config', 'application.rb')
+      second = File.join('config', 'application_2.rb')
+      @backup = "#{@primary}.backup"
+      FileUtils.cp @primary, @backup
+      FileUtils.cp second, @primary
+      # give spring time to react
+      sleep 2
+    end
+
+    after do
+      FileUtils.mv @backup, @primary
     end
 
     subject { lambda { output } }
@@ -136,15 +166,17 @@ describe Spring::Commands::OpalRSpec do
   end
 
   context 'test changed' do
-    around do |ex|
+    before do
       run_spring 'opal-rspec'
-      primary = File.join('spec', 'example_spec.rb')
+      @primary = File.join('spec', 'example_spec.rb')
       second = File.join('spec', 'swap.rb')
-      backup = "#{primary}.backup"
-      FileUtils.cp primary, backup
-      FileUtils.cp second, primary
-      ex.run
-      FileUtils.mv backup, primary
+      @backup = "#{@primary}.backup"
+      FileUtils.cp @primary, @backup
+      FileUtils.cp second, @primary
+    end
+
+    after do
+      FileUtils.mv @backup, @primary
     end
 
     it { is_expected.to match /2 examples, 0 failures/ }

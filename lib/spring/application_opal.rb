@@ -18,12 +18,23 @@ module Spring
 
     alias_method :stock_terminate, :terminate
 
-    def terminate
+    def kill_opal_process
       if @opal_rspec_pid
         log "terminating opal-rspec PID #{@opal_rspec_pid}"
         Process.kill 'TERM', @opal_rspec_pid
       end
+    end
+
+    def terminate
+      kill_opal_process
       stock_terminate
+    end
+
+    alias_method :stock_exit, :exit
+
+    def exit
+      kill_opal_process
+      stock_exit
     end
   end
 end
