@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_dependency 'opal-rspec', '>= 0.5.0.beta3'
-  s.add_dependency 'opal-rails', '>= 0.8.1.beta4'
+  s.add_dependency 'opal-rails', '>= 0.8.1'
   s.add_dependency 'spring', '>= 0.9.1'
   s.add_development_dependency 'rake'
 

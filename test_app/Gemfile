@@ -21,7 +21,8 @@ gem 'jbuilder', '~> 2.0'
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0', group: :doc
 
-gem 'opal-rails', '>= 0.8.1.beta3'
+# during testing
+gem 'opal-rails', git: 'https://github.com/wied03/opal-rails.git'
 gemspec path: '..'
 
 # Use ActiveModel has_secure_password
