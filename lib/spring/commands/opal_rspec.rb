@@ -46,7 +46,8 @@ module Spring
 
       def start_server
         Process.spawn({
-                          'RAILS_ROOT' => ::Rails.root.to_s
+                          'RAILS_ROOT' => ::Rails.root.to_s,
+                          'RAILS_ENV' => 'test'
                       },
                       'ruby',
                       '-I',
